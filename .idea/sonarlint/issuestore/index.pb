@@ -11,3 +11,5 @@ J
 .github/workflows/test.yml,7/c/7ceee5d954a74b8640cc2bfd6c27b8fdf07d7045
 K
 .github/workflows/sonar.yml,3/f/3ff5264e70c891beb6f9ead3c07cccf6f5fd1211
+H
+sonar-project.properties,2/5/2538046035efb77ecc44e1fd2eec1e2641594d4c
