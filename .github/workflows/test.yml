@@ -34,22 +34,19 @@ jobs:
                 text: "my text",
               },
             });
+             console.log(response.data);
+             # Save the check run ID as an environment variable
+            process.env.CHECK_RUN_ID = response.data.id;
 
       - name: "Create GitHub Check Annotation"
         run: |
-          CHECK_RUN_ID=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -d '{"name": "my-check-name", "status": "completed", "conclusion": "'"$conclusion"'"}' \
-            "https://api.github.com/repos/diego-sbtlab/next-test/check-runs" \
-            | jq -r .id)
-
-          echo "CHECK_RUN_ID: $CHECK_RUN_ID"  
+        
+          echo "Check run ID: ${{ env.CHECK_RUN_ID }}"
 
           curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             -d '{"path": "README.md", "start_line": 1, "end_line": 1, "annotation_level": "notice", "message": "Resumo do SonarQube" }' \
-            "https://api.github.com/repos/diego-sbtlab/next-test/check-runs/$CHECK_RUN_ID/annotations" 
+            "https://api.github.com/repos/diego-sbtlab/next-test/check-runs/${{ env.CHECK_RUN_ID }}/annotations" 
 
         
