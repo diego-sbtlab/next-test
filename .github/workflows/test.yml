@@ -4,6 +4,10 @@ on: [push]
 jobs:
   test_something:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     steps:
       - name: "Create a check run"
         uses: actions/github-script@v6
