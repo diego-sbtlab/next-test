@@ -106,3 +106,17 @@ jobs:
                   body: `:chart_with_upwards_trend: **SonarQube Analysis Results**\n\nDetails: [SonarQube Dashboard](https://your-sonarqube-instance/dashboard?id=${{ github.repository }}&branch=${{ github.event.pull_request.head.ref }})`,
                 });
               }
+
+      - name: Set up Sonar Quality Gate
+        uses: dieuhd/sonar-quality-gate@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_URL: "https://api.github.com"
+          GIT_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_URL: ${{ vars.SONARQUBE_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_PROJECT_KEY: next-test
+        with:
+          login:  ${{ secrets.SONARQUBE_TOKEN }}
+          url: ${{ secrets.SONARQUBE_HOST }}
+          projectKey: next-test
