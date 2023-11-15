@@ -4,7 +4,6 @@ on:
     branches:
       - main
 
-
 jobs:
   test_something:
     runs-on: ubuntu-latest
@@ -30,12 +29,31 @@ jobs:
               conclusion: conclusion,
               details_url: "https://example.com/sadsadsadasd",
               output: {
-                title: "my check title",
+                title: "my check title !!!!",
                 summary: "my *check* summary",
                 text: "my text",
               },
+                 // Adicione uma anotação diretamente como parte do objeto de entrada
+              annotations: [{
+                path: "README.md",
+                start_line: 1,
+                end_line: 1,
+                annotation_level: "notice",
+                message: "Resumo do SonarQube",
+              }],
             });
-            
             console.log(response.data);
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
+            process.env.CHECK_RUN_ID = response.data.id;
+
+    
+
+      - name: "Create GitHub Check Annotation"
+        run: |
+          echo "Check run ID -->: $CHECK_RUN_ID"
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"path": "README.md", "start_line": 1, "end_line": 1, "annotation_level": "notice", "message": "Resumo do SonarQube" }' \
+            "https://api.github.com/repos/diego-sbtlab/next-test/check-runs/$CHECK_RUN_ID/annotations" 
+
+        
