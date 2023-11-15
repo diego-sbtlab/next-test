@@ -55,28 +55,28 @@ jobs:
       - name: Show SonarQube Quality Gate Status
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
 
-      - name: Create SonarQube Check Run
-        uses: actions/github-script@v7
+      - name: "Create a check run"
+        uses: actions/github-script@v6
         with:
+          debug: ${{ secrets.ACTIONS_STEP_DEBUG || false }}
           script: |
-            const { getOctokit } = require('@actions/github');
+            const conclusion = "${{ github.event.workflow_run.conclusion }}" || "success";
 
-            const octokitWithToken = getOctokit({ auth: process.env.GITHUB_TOKEN });
-
-            const checkRunPayload = {
+            const response = await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              name: 'SonarQube Analysis',
               head_sha: context.sha,
-              status: 'completed',
-              conclusion: 'success',  // You can customize this based on SonarQube results
-              started_at: new Date().toISOString(),
-              completed_at: new Date().toISOString(),
+              name: "my-check-name",
+              status: "completed",
+              conclusion: conclusion,
+              details_url: "https://example.com/sadsadsadasd",
               output: {
-                title: 'SonarQube Analysis Results',
-                summary: 'SonarQube analysis results for your pull request',
-                text: `Bugs: 155 \n Code Smells: 10\nDuplication: 11 \nTest Coverage: 19`,
+                title: "my check title",
+                summary: "my *check* summary",
+                text: "my text",
               },
-            };
+            });
 
-            await octokitWithToken.rest.checks.create(checkRunPayload);
+            console.log(response.data);
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
