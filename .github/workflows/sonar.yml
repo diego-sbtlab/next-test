@@ -1,0 +1,42 @@
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request.
+  push:
+    branches:
+      - developgyh
+  pull_request:
+    types: [opened, synchronize, reopened]
+name: Main Workflow
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    env:
+      MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting.
+          fetch-depth: 0
+
+      # Triggering SonarQube analysis as results of it are required by Quality Gate check.
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST }}
+
+      - name: Upload SonarQube Analysis Results to GitHub Check API
+        uses: actions/upload-artifact@v3
+        with:
+          name: sonar-analysis-results
+          path: sonar-report/
+
+      # Check the Quality Gate status.
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST }}

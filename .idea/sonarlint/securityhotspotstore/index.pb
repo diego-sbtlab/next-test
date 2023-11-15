@@ -9,3 +9,5 @@ A
 lighthouserc.json,8/5/8570f928a8a9502665c26724b5594f04ca63b548
 J
 .github/workflows/test.yml,7/c/7ceee5d954a74b8640cc2bfd6c27b8fdf07d7045
+K
+.github/workflows/sonar.yml,3/f/3ff5264e70c891beb6f9ead3c07cccf6f5fd1211
