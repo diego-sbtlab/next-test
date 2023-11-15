@@ -33,24 +33,19 @@ jobs:
                 summary: "my *check* summary",
                 text: "my text",
               },
+                 // Adicione uma anotação diretamente como parte do objeto de entrada
+              annotations: [{
+                path: "README.md",
+                start_line: 1,
+                end_line: 1,
+                annotation_level: "notice",
+                message: "Resumo do SonarQube",
+              }],
             });
             console.log(response.data);
             process.env.CHECK_RUN_ID = response.data.id;
 
-            // Obtenha o check_run_id
-            const checkRunId = response.data.id;
-
-            // Adicione a anotação
-            const annotationResponse = await github.rest.checks.createAnnotation({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              check_run_id: checkRunId,
-              path: "README.md",
-              start_line: 1,
-              end_line: 1,
-              annotation_level: "notice",
-              message: "Resumo do SonarQube",
-            });
+    
 
       - name: "Create GitHub Check Annotation"
         run: |
