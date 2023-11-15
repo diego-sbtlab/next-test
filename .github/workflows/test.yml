@@ -44,4 +44,10 @@ jobs:
             "https://api.github.com/repos/diego-sbtlab/next-test/check-runs" \
             | jq -r .id)
 
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"path": "README.md", "start_line": 1, "end_line": 1, "annotation_level": "notice", "message": "Resumo do SonarQube" }' \
+            "https://api.github.com/repos/diego-sbtlab/next-test/check-runs/$CHECK_RUN_ID/annotations" 
+
         
