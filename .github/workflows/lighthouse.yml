@@ -16,15 +16,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       - name: Build and start Next.js app
         run: |
-          npm run build
-          npm run start
+          yarn build
+          yarn start
 
   lighthouse:
     needs: build
@@ -60,10 +60,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Install dependencies for processing report
-        run: npm install
+        run: yarn install
 
       - name: Process Lighthouse report and send results to GitHub
         run: node process-lighthouse-report.js  # Substitua isso pelo script que processa o relatório e envia os resultados ao GitHub
