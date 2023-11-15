@@ -10,6 +10,11 @@ name: Main Workflow
 jobs:
   sonarqube:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+      checks: write
     env:
       MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
     steps:
