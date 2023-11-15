@@ -3,7 +3,7 @@ name: Pull Request CI
 on:
   push:
     branches:
-      - main
+      - mainSADAD
 
 jobs:
   lighthouse:
