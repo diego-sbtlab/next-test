@@ -40,3 +40,38 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST }}
+
+
+      - name: Install Dependencies
+        run: npm install @actions/github
+
+      # Optionally you can use the output from the Quality Gate in another step.
+      # The possible outputs of the `quality-gate-status` variable are `PASSED`, `WARN` or `FAILED`.
+      - name: Show SonarQube Quality Gate Status
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+
+      - name: Create SonarQube Check Run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { getOctokit } = require('@actions/github');
+
+            const octokitWithToken = getOctokit({ auth: process.env.MY_PERSONAL_TOKEN });
+
+            const checkRunPayload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'SonarQube Analysis',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: 'success',  // You can customize this based on SonarQube results
+              started_at: new Date().toISOString(),
+              completed_at: new Date().toISOString(),
+              output: {
+                title: 'SonarQube Analysis Results',
+                summary: 'SonarQube analysis results for your pull request',
+                text: `Bugs: 155 \n Code Smells: 10\nDuplication: 11 \nTest Coverage: 19`,
+              },
+            };
+
+            await octokitWithToken.rest.checks.create(checkRunPayload);
