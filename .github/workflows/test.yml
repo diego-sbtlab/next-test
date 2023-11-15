@@ -29,3 +29,5 @@ jobs:
                   text: "my text",
                 },
               });
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
