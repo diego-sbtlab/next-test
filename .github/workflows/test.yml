@@ -24,7 +24,7 @@ jobs:
               name: "my-check-name",
               status: "completed",
               conclusion: conclusion,
-              details_url: "sdsad",
+              details_url: "https://example.com/sdsad",
               output: {
                 title: "my check title",
                 summary: "my *check* summary",
