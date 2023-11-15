@@ -36,6 +36,8 @@ jobs:
             });
             console.log(response.data);
             process.env.CHECK_RUN_ID = response.data.id;
+            echo "CHECK_RUN_ID=${response.data.id}" >> $GITHUB_ENV
+            echo "Check run ID: $GITHUB_ENV"
 
       - name: "Create GitHub Check Annotation"
         run: |
