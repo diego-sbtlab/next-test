@@ -34,8 +34,7 @@ jobs:
                 text: "my text",
               },
             });
-             console.log(response.data);
-             # Save the check run ID as an environment variable
+            console.log(response.data);
             process.env.CHECK_RUN_ID = response.data.id;
 
       - name: "Create GitHub Check Annotation"
