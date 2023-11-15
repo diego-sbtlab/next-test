@@ -36,5 +36,19 @@ jobs:
             });
             
             console.log(response.data);
+
+
+              // Adiciona uma anotação com o resumo do SonarQube
+            await github.rest.checks.createAnnotation({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: response.data.id,
+              body: "Resumo do SonarQube",
+              start_line: 1,  // Ajuste conforme necessário
+              end_line: 1,    // Ajuste conforme necessário
+              start_column: 1,
+              end_column: 1,
+              annotation_level: "notice",  // "notice" é informativo, ajuste conforme necessário
+            });
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
