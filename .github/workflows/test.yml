@@ -26,7 +26,7 @@ jobs:
               conclusion: conclusion,
               details_url: "https://example.com/sadsadsadasd",
               output: {
-                title: "my check title",
+                title: "my check title !!!!",
                 summary: "my *check* summary",
                 text: "my text",
               },
