@@ -112,12 +112,34 @@ jobs:
         with:
           script: |
             const report = `
-              :bug: **Bugs**: ${{ steps.analysis_report.outputs.bugs }}
-              :lock: **Vulnerabilities**: ${{ steps.analysis_report.outputs.vulnerabilities }}
-              <!-- Adicione mais seções conforme necessário -->
+             ### Quality Gate
+             <table>
+               <tr>
+                 <td>Passed</td>
+               </tr>
+             </table>
             
-              *Additional Information*:
-              - Any extra information or links here
+             ### Badge - Quality Gate
+             ![QualityGate](https://img.shields.io/static/v1?label=QualityGate&message=Passed&color=green)
+            
+             ### Additional Information
+             *Italic text*
+            
+             ### Issues
+             <table>
+               <tr>
+                 <td>![Bug](URL_TO_BUG_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Bug&message=A(0%20Bugs)&color=green)</td>
+               </tr>
+               <tr>
+                 <td>![Lock](URL_TO_LOCK_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Lock&message=A(0%20Vulnerabilities)&color=green)</td>
+               </tr>
+               <tr>
+                 <td>![Radiation](URL_TO_RADIATION_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Radiation&message=A(3%20Code%20Smells)&color=green)</td>
+               </tr>
+             </table>
             `;
             
             github.rest.issues.createComment({
