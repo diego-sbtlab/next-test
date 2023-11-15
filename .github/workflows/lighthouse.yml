@@ -1,0 +1,69 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and start Next.js app
+        run: |
+          npm run build
+          npm run start
+
+  lighthouse:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for Next.js to start
+        run: sleep 30
+
+      - name: Install Lighthouse
+        run: npm install -g lighthouse
+
+      - name: Run Lighthouse
+        run: lighthouse http://localhost:3000 --output json --output-path lighthouse-report.json
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lighthouse-report
+          path: lighthouse-report.json
+
+  check-results:
+    needs: lighthouse
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Lighthouse report
+        uses: actions/download-artifact@v2
+        with:
+          name: lighthouse-report
+          path: lighthouse-report
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install dependencies for processing report
+        run: npm install
+
+      - name: Process Lighthouse report and send results to GitHub
+        run: node process-lighthouse-report.js  # Substitua isso pelo script que processa o relatório e envia os resultados ao GitHub
