@@ -38,17 +38,11 @@ jobs:
             console.log(response.data);
 
 
-              // Adiciona uma anotação com o resumo do SonarQube
-            await github.rest.checks.createAnnotation({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              check_run_id: response.data.id,
-              body: "Resumo do SonarQube",
-              start_line: 1,  // Ajuste conforme necessário
-              end_line: 1,    // Ajuste conforme necessário
-              start_column: 1,
-              end_column: 1,
-              annotation_level: "notice",  // "notice" é informativo, ajuste conforme necessário
-            });
+              # Adiciona uma anotação com o resumo do SonarQube
+              curl -s -X POST \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -d '{"path": "README.md", "start_line": 1, "end_line": 1, "annotation_level": "notice", "message": "Resumo do SonarQube: '"${{ steps.sonar_results.outputs.sonar_results }}'"}' \
+                "https://api.github.com/repos/${{ github.repository }}/check-runs/$CHECK_RUN_ID/annotations"
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
