@@ -107,6 +107,26 @@ jobs:
                 });
               }
 
+      - name: Create Report Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const report = `
+              :bug: **Bugs**: ${{ steps.analysis_report.outputs.bugs }}
+              :lock: **Vulnerabilities**: ${{ steps.analysis_report.outputs.vulnerabilities }}
+              <!-- Adicione mais seções conforme necessário -->
+            
+              *Additional Information*:
+              - Any extra information or links here
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report,
+            });
+
       - name: Set up Sonar Quality Gate
         uses: dieuhd/sonar-quality-gate@v1
         env:
