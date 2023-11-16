@@ -1,29 +1,16 @@
-name: Pull Request CI
-
-on:
-  push:
-    branches:
-      - mainSADAD
+name: Audit live site
+on: push
 
 jobs:
-  lighthouse:
-    name: Lighthouse CI
+  audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Audit live URL
+        uses: jakejarvis/lighthouse-action@master
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Install dependencies
-        run: yarn
-
-      - name: lighthouse mobile audit
-        run: yarn lhci:mobile
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-
-      - name: lighthouse desktop audit
-        run: yarn lhci:desktop
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          url: 'https://www.sbtnews.com.br/'
+      - name: Upload results as an artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: report
+          path: './report'
