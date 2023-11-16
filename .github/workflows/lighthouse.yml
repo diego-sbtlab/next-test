@@ -2,15 +2,20 @@ name: Audit live site
 on: push
 
 jobs:
-  audit:
+  lighthouse:
     runs-on: ubuntu-latest
     steps:
-      - name: Audit live URL
-        uses: jakejarvis/lighthouse-action@master
+      - uses: actions/checkout@master
+      - name: Lighthouse
+        uses: foo-software/lighthouse-check-action@master
         with:
-          url: 'https://www.sbtnews.com.br/'
-      - name: Upload results as an artifact
-        uses: actions/upload-artifact@master
+          urls: 'https://www.sbtnews.com.br'
+      - name: Verify Lighthouse Check results
+        uses: foo-software/lighthouse-check-status-action@master
         with:
-          name: report
-          path: './report'
+          lighthouseCheckResults: ${{ steps.lighthouseCheck.outputs.lighthouseCheckResults }}
+          minAccessibilityScore: "90"
+          minBestPracticesScore: "50"
+          minPerformanceScore: "50"
+          minProgressiveWebAppScore: "50"
+          minSeoScore: "50"
