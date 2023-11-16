@@ -1,0 +1,164 @@
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request.
+  pull_request:
+    types: [opened, synchronize, reopened]
+name: SONAR
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+      checks: write
+    env:
+      MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting.
+          fetch-depth: 0
+
+      # Triggering SonarQube analysis as results of it are required by Quality Gate check.
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST }}
+
+      - name: Upload SonarQube Analysis Results to GitHub Check API
+        uses: actions/upload-artifact@v3
+        with:
+          name: sonar-analysis-results
+          path: sonar-report/
+
+      # Check the Quality Gate status.
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST }}
+
+
+      - name: Install Dependencies
+        run: npm install @actions/github
+
+      # Optionally you can use the output from the Quality Gate in another step.
+      # The possible outputs of the `quality-gate-status` variable are `PASSED`, `WARN` or `FAILED`.
+      - name: Show SonarQube Quality Gate Status
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+
+      - name: "Create a check run"
+        uses: actions/github-script@v6
+        with:
+          debug: ${{ secrets.ACTIONS_STEP_DEBUG || false }}
+          script: |
+            const conclusion = "${{ github.event.workflow_run.conclusion }}" || "success";
+
+            const response = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: context.sha,
+              name: "my-check-name",
+              status: "completed",
+              conclusion: conclusion,
+              details_url: "https://example.com/sadsadsadasd",
+              output: {
+                title: "my check title",
+                summary: "my *check* summary",
+                text: "my text",
+              },
+            });
+
+            console.log(response.data);
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
+
+      - name: Add SonarQube Comment to Pull Request
+        uses: actions/github-script@v6
+        if: always()
+        with:
+          script: |
+              const { data: issues } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              const sonarComment = issues.find(comment => comment.user.login === "github-actions[bot]" && comment.body.includes("SonarQube Analysis"));
+              
+              if (sonarComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: sonarComment.id,
+                  body: `:chart_with_upwards_trend: **SonarQube Analysis Results**\n\nDetails: [SonarQube Dashboard](https://your-sonarqube-instance/dashboard?id=${{ github.repository }}&branch=${{ github.event.pull_request.head.ref }})`,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `:chart_with_upwards_trend: **SonarQube Analysis Results**\n\nDetails: [SonarQube Dashboard](https://your-sonarqube-instance/dashboard?id=${{ github.repository }}&branch=${{ github.event.pull_request.head.ref }})`,
+                });
+              }
+
+      - name: Create Report Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const report = `
+             ### Quality Gate
+             <table>
+               <tr>
+                 <td>Passed</td>
+               </tr>
+             </table>
+            
+             ### Badge - Quality Gate
+             ![QualityGate](https://img.shields.io/static/v1?label=QualityGate&message=Passed&color=green)
+            
+             ### Additional Information
+             *Italic text*
+            
+             ### Issues
+             <table>
+               <tr>
+                 <td>![Bug](URL_TO_BUG_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Bug&message=A(0%20Bugs)&color=green)</td>
+               </tr>
+               <tr>
+                 <td>![Lock](URL_TO_LOCK_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Lock&message=A(0%20Vulnerabilities)&color=green)</td>
+               </tr>
+               <tr>
+                 <td>![Radiation](URL_TO_RADIATION_ICON)</td>
+                 <td>![Badge](https://img.shields.io/static/v1?label=Radiation&message=A(3%20Code%20Smells)&color=green)</td>
+               </tr>
+             </table>
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report,
+            });
+
+      - name: Set up Sonar Quality Gate
+        uses: dieuhd/sonar-quality-gate@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_URL: "https://api.github.com"
+          GIT_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_URL: ${{ vars.SONARQUBE_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_PROJECT_KEY: next-test
+        with:
+          login:  ${{ secrets.SONARQUBE_TOKEN }}
+          url: ${{ secrets.SONARQUBE_HOST }}
+          projectKey: next-test
